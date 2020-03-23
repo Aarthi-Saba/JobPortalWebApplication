@@ -1,0 +1,30 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+option csharp_namespace = "CareerCloud.gRPC.Protos";
+package CareerCloud.gRPC;
+
+service ApplicantWorkHistory{
+	rpc GetApplicantWorkHistory(AppWorkHistIdRequest) returns (AppWorkProto);
+	rpc CreateApplicantWorkHistory(AppWorkProto) returns (google.protobuf.Empty);
+	rpc UpdateApplicantWorkHistory(AppWorkProto) returns (google.protobuf.Empty);
+	rpc DeleteApplicantWorkHistory(AppWorkProto) returns (google.protobuf.Empty);
+}
+
+message AppWorkHistIdRequest{
+	string Id = 1;
+}
+
+message AppWorkProto{
+        string Id = 1;
+        string Applicant = 2;
+        string CompanyName = 3;
+        string CountryCode = 4;
+        string Location = 5;
+        string JobTitle = 6;
+        string JobDescription = 7;
+        int32 StartMonth = 8;
+        int32 StartYear = 9;
+        int32 EndMonth = 10;
+        int32 EndYear = 11;
+}

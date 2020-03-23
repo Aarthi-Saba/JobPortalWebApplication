@@ -1,0 +1,20 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+option csharp_namespace = "CareerCloud.gRPC.Protos";
+package CareerCloud.gRPC;
+
+service SystemCountryCode{
+    rpc GetSystemCountryCode(SysCountryIdRequest) returns (SysCountryCodeProto);
+    rpc UpdateSystemCountryCode(SysCountryCodeProto) returns (google.protobuf.Empty);
+    rpc CreateSystemCountryCode(SysCountryCodeProto) returns (google.protobuf.Empty);
+    rpc DeleteSystemCountryCode(SysCountryCodeProto) returns (google.protobuf.Empty);
+}
+
+message SysCountryIdRequest{
+    string Id = 1;
+}
+message SysCountryCodeProto{
+    string Code = 1;
+    string Name = 2;
+}

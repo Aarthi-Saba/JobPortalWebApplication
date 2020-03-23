@@ -1,0 +1,20 @@
+syntax = "proto3";
+import "google/protobuf/empty.proto";
+
+option csharp_namespace = "CareerCloud.gRPC.Protos";
+package CareerCloud.gRPC;
+
+service SecurityRole{
+	rpc GetSecurityRole(SecRoleIdRequest) returns (SecRoleProto);
+	rpc UpdateSecurityRole(SecRoleProto) returns (google.protobuf.Empty);
+	rpc CreateSecurityRole(SecRoleProto) returns (google.protobuf.Empty);
+	rpc DeleteSecurityRole(SecRoleProto) returns (google.protobuf.Empty);
+}
+message SecRoleIdRequest{
+    string Id = 1;
+}
+message SecRoleProto{
+    string Id = 1;
+    string Role = 2;
+    bool IsInactive = 3;
+}
