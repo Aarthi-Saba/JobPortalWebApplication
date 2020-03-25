@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CareerCloud.gRPC.Protos;
+using CareerCloud.gRPC.Services;
 using CareerCloudgRPC;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -34,6 +35,25 @@ namespace CareerCloud.gRPC
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapGrpcService<GreeterService>();
+                endpoints.MapGrpcService<ApplicantEducationService>();
+                endpoints.MapGrpcService<ApplicantJobApplicationService>();
+                endpoints.MapGrpcService<ApplicantProfileService>();
+                endpoints.MapGrpcService<ApplicantResumeService>();
+                endpoints.MapGrpcService<ApplicantSkillService>();
+                endpoints.MapGrpcService<ApplicantWorkHistoryService>();
+                endpoints.MapGrpcService<CompanyDescriptionService>();
+                endpoints.MapGrpcService<CompanyJobDescriptionService>();
+                endpoints.MapGrpcService<CompanyJobEducationService>();
+                endpoints.MapGrpcService<CompanyJobService>();
+                endpoints.MapGrpcService<CompanyJobSkillService>();
+                endpoints.MapGrpcService<CompanyLocationService>();
+                endpoints.MapGrpcService<CompanyProfileService>();
+                endpoints.MapGrpcService<SecurityLoginService>();
+                endpoints.MapGrpcService<SecurityLoginsLogService>();
+                endpoints.MapGrpcService<SecurityLoginsRoleService>();
+                endpoints.MapGrpcService<SecurityRoleService>();
+                endpoints.MapGrpcService<SystemCountryCodeService>();
+                endpoints.MapGrpcService<SystemLanguageCodeService>();
 
                 endpoints.MapGet("/", async context =>
                 {

@@ -6,9 +6,10 @@ package CareerCloud.gRPC;
 
 service CompanyJobSkill{
 	rpc GetCompanyJobSkill(ComJobSkillIdRequest) returns (ComJobSkillProto);
-	rpc UpdateCompanyJobSkill(ComJobSkillProto) returns (google.protobuf.Empty);
-	rpc CreateCompanyJobSkill(ComJobSkillProto) returns (google.protobuf.Empty);
-	rpc DeleteCompanyJobSkill(ComJobSkillProto) returns (google.protobuf.Empty);
+    rpc GetAllCompanyJobSkill(google.protobuf.Empty) returns(ComJobSkillArray);
+	rpc UpdateCompanyJobSkill(ComJobSkillArray) returns (google.protobuf.Empty);
+	rpc CreateCompanyJobSkill(ComJobSkillArray) returns (google.protobuf.Empty);
+	rpc DeleteCompanyJobSkill(ComJobSkillArray) returns (google.protobuf.Empty);
 }
 
 message ComJobSkillIdRequest{
@@ -21,4 +22,7 @@ message ComJobSkillProto{
         string Skill = 3;
         string SkillLevel = 4;
         int32 Importance = 5;
+}
+message ComJobSkillArray{
+    repeated ComJobSkillProto ComJobSkill = 1;
 }

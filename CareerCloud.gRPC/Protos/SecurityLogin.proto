@@ -7,9 +7,10 @@ package CareerCloud.gRPC;
 
 service SecurityLogin{
 	rpc GetSecurityLogin(SecLogIdRequest) returns (SecLoginProto);
-	rpc UpdateSecurityLogin(SecLoginProto) returns (google.protobuf.Empty);
-	rpc CreateSecurityLogin(SecLoginProto) returns (google.protobuf.Empty);
-	rpc DeleteSecurityLogin(SecLoginProto) returns (google.protobuf.Empty);
+    rpc GetAllSecurityLogin(google.protobuf.Empty) returns (SecLoginArray);
+	rpc UpdateSecurityLogin(SecLoginArray) returns (google.protobuf.Empty);
+	rpc CreateSecurityLogin(SecLoginArray) returns (google.protobuf.Empty);
+	rpc DeleteSecurityLogin(SecLoginArray) returns (google.protobuf.Empty);
 }
 message SecLogIdRequest{
 	string Id = 1;
@@ -28,4 +29,7 @@ message SecLoginProto{
     string FullName = 11;
     bool ForceChangePassword = 12;
     string PrefferredLanguage = 13;
+}
+message SecLoginArray{
+    repeated SecLoginProto SecLogin = 1;
 }

@@ -24,7 +24,7 @@ namespace CareerCloud.gRPC.Services
         public override Task<CompProfileProto> GetCompanyProfile(CompProfIdRequest request, ServerCallContext context)
         {
             CompanyProfilePoco poco = _logic.Get(Guid.Parse(request.Id));
-            if(poco is null)
+            if (poco is null)
             {
                 throw new ArgumentOutOfRangeException("No such id found");
             }
@@ -39,50 +39,61 @@ namespace CareerCloud.gRPC.Services
                     ContactPhone = poco.ContactPhone
                 });
         }
-        public override Task<Empty> CreateCompanyProfile(CompProfileProto request, ServerCallContext context)
+        public override Task<CompProfileArray> GetAllCompanyProfile(Empty request, ServerCallContext context)
         {
-            CompanyProfilePoco[] pocos = new CompanyProfilePoco[1];
-            foreach(var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.RegistrationDate = request.RegistrationDate.ToDateTime();
-                poco.CompanyWebsite = request.CompanyWebsite;
-                poco.ContactName = request.ContactName;
-                poco.ContactPhone = request.ContactPhone;
-                poco.CompanyLogo = request.CompanyLogo.ToByteArray();
-            }
-            _logic.Add(pocos);
-            return new Task<Empty>(() => new Empty());
-        }
-        public override Task<Empty> UpdateCompanyProfile(CompProfileProto request, ServerCallContext context)
-        {
-            CompanyProfilePoco[] pocos = new CompanyProfilePoco[1];
+            List<CompanyProfilePoco> pocos = _logic.GetAll();
+            List<CompProfileProto> compProfileList = new List<CompProfileProto>();
             foreach (var poco in pocos)
             {
-                poco.Id = Guid.Parse(request.Id);
-                poco.RegistrationDate = request.RegistrationDate.ToDateTime();
-                poco.CompanyWebsite = request.CompanyWebsite;
-                poco.ContactName = request.ContactName;
-                poco.ContactPhone = request.ContactPhone;
-                poco.CompanyLogo = request.CompanyLogo.ToByteArray();
+                CompProfileProto compProfile = new CompProfileProto();
+                compProfile.Id = poco.Id.ToString();
+                compProfile.RegistrationDate = Timestamp.FromDateTime(poco.RegistrationDate);
+                compProfile.CompanyWebsite = poco.CompanyWebsite;
+                compProfile.ContactName = poco.ContactName;
+                compProfile.CompanyLogo = ByteString.CopyFrom(poco.CompanyLogo);
+                compProfile.ContactPhone = poco.ContactPhone;
+                compProfileList.Add(compProfile);
             }
-            _logic.Update(pocos);
+            CompProfileArray compProfileArray = new CompProfileArray();
+            compProfileArray.CompProfile.AddRange(compProfileList);
+            return new Task<CompProfileArray>(() => compProfileArray);
+        }
+        public override Task<Empty> CreateCompanyProfile(CompProfileArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Add(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
         }
-        public override Task<Empty> DeleteCompanyProfile(CompProfileProto request, ServerCallContext context)
+        public override Task<Empty> UpdateCompanyProfile(CompProfileArray request, ServerCallContext context)
         {
-            CompanyProfilePoco[] pocos = new CompanyProfilePoco[1];
-            foreach (var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.RegistrationDate = request.RegistrationDate.ToDateTime();
-                poco.CompanyWebsite = request.CompanyWebsite;
-                poco.ContactName = request.ContactName;
-                poco.ContactPhone = request.ContactPhone;
-                poco.CompanyLogo = request.CompanyLogo.ToByteArray();
-            }
-            _logic.Delete(pocos);
+            var pocos = ProtoToPoco(request);
+            _logic.Update(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
+        }
+        public override Task<Empty> DeleteCompanyProfile(CompProfileArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Delete(pocos.ToArray());
+            return new Task<Empty>(() => new Empty());
+        }
+
+        public List<CompanyProfilePoco> ProtoToPoco(CompProfileArray request)
+        {
+            List<CompanyProfilePoco> pocos = new List<CompanyProfilePoco>();
+            var inputList = request.CompProfile.ToList();
+            foreach (var item in inputList)
+            {
+                var poco = new CompanyProfilePoco();
+                poco.Id = Guid.Parse(item.Id);
+                poco.RegistrationDate = item.RegistrationDate.ToDateTime();
+                poco.CompanyWebsite = item.CompanyWebsite;
+                poco.ContactName = item.ContactName;
+                poco.ContactPhone = item.ContactPhone;
+                poco.CompanyLogo = item.CompanyLogo.ToByteArray();
+                pocos.Add(poco);
+            }
+            return pocos;
+
         }
     }
 }

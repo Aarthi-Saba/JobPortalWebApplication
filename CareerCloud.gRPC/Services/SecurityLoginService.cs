@@ -45,71 +45,73 @@ namespace CareerCloud.gRPC.Services
                     PrefferredLanguage = poco.PrefferredLanguage
                 });
         }
-        public override Task<Empty> CreateSecurityLogin(SecLoginProto request, ServerCallContext context)
+        public override Task<SecLoginArray> GetAllSecurityLogin(Empty request, ServerCallContext context)
         {
-            SecurityLoginPoco[] pocos = new SecurityLoginPoco[1];
-            foreach(var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Login = request.Login;
-                poco.Password = request.Password;
-                poco.Created = request.Created.ToDateTime();
-                poco.PasswordUpdate = request.PasswordUpdate.ToDateTime();
-                poco.AgreementAccepted = request.AgreementAccepted.ToDateTime();
-                poco.IsLocked = request.IsLocked;
-                poco.IsInactive = request.IsInactive;
-                poco.EmailAddress = request.EmailAddress;
-                poco.PhoneNumber = request.PhoneNumber;
-                poco.FullName = request.FullName;
-                poco.ForceChangePassword = request.ForceChangePassword;
-                poco.PrefferredLanguage = request.PrefferredLanguage;
-            }
-            _logic.Add(pocos);
-            return new Task<Empty>(() => new Empty());
-        }
-        public override Task<Empty> UpdateSecurityLogin(SecLoginProto request, ServerCallContext context)
-        {
-            SecurityLoginPoco[] pocos = new SecurityLoginPoco[1];
+            List<SecurityLoginPoco> pocos = _logic.GetAll();
+            List<SecLoginProto> secLoginList = new List<SecLoginProto>();
             foreach (var poco in pocos)
             {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Login = request.Login;
-                poco.Password = request.Password;
-                poco.Created = request.Created.ToDateTime();
-                poco.PasswordUpdate = request.PasswordUpdate.ToDateTime();
-                poco.AgreementAccepted = request.AgreementAccepted.ToDateTime();
-                poco.IsLocked = request.IsLocked;
-                poco.IsInactive = request.IsInactive;
-                poco.EmailAddress = request.EmailAddress;
-                poco.PhoneNumber = request.PhoneNumber;
-                poco.FullName = request.FullName;
-                poco.ForceChangePassword = request.ForceChangePassword;
-                poco.PrefferredLanguage = request.PrefferredLanguage;
+                SecLoginProto secLogin = new SecLoginProto();
+                secLogin.Id = poco.Id.ToString();
+                secLogin.Login = poco.Login;
+                secLogin.Password = poco.Password;
+                secLogin.Created = Timestamp.FromDateTime((DateTime)poco.Created);
+                secLogin.PasswordUpdate = poco.PasswordUpdate is null ? null : Timestamp.FromDateTime((DateTime)poco.PasswordUpdate);
+                secLogin.AgreementAccepted = poco.AgreementAccepted is null ? null : Timestamp.FromDateTime((DateTime)poco.AgreementAccepted);
+                secLogin.IsLocked = poco.IsLocked;
+                secLogin.IsInactive = poco.IsInactive;
+                secLogin.EmailAddress = poco.EmailAddress;
+                secLogin.PhoneNumber = poco.PhoneNumber;
+                secLogin.FullName = poco.FullName;
+                secLogin.ForceChangePassword = poco.ForceChangePassword;
+                secLogin.PrefferredLanguage = poco.PrefferredLanguage;
+                secLoginList.Add(secLogin);
             }
-            _logic.Update(pocos);
+            SecLoginArray secLoginArray = new SecLoginArray();
+            secLoginArray.SecLogin.AddRange(secLoginList);
+            return new Task<SecLoginArray>(() => secLoginArray);
+        }
+        public override Task<Empty> CreateSecurityLogin(SecLoginArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Add(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
         }
-        public override Task<Empty> DeleteSecurityLogin(SecLoginProto request, ServerCallContext context)
+        public override Task<Empty> UpdateSecurityLogin(SecLoginArray request, ServerCallContext context)
         {
-            SecurityLoginPoco[] pocos = new SecurityLoginPoco[1];
-            foreach (var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Login = request.Login;
-                poco.Password = request.Password;
-                poco.Created = request.Created.ToDateTime();
-                poco.PasswordUpdate = request.PasswordUpdate.ToDateTime();
-                poco.AgreementAccepted = request.AgreementAccepted.ToDateTime();
-                poco.IsLocked = request.IsLocked;
-                poco.IsInactive = request.IsInactive;
-                poco.EmailAddress = request.EmailAddress;
-                poco.PhoneNumber = request.PhoneNumber;
-                poco.FullName = request.FullName;
-                poco.ForceChangePassword = request.ForceChangePassword;
-                poco.PrefferredLanguage = request.PrefferredLanguage;
-            }
-            _logic.Delete(pocos);
+            var pocos = ProtoToPoco(request);
+            _logic.Update(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
+        }
+        public override Task<Empty> DeleteSecurityLogin(SecLoginArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Delete(pocos.ToArray());
+            return new Task<Empty>(() => new Empty());
+        }
+        public List<SecurityLoginPoco> ProtoToPoco(SecLoginArray request)
+        {
+            List<SecurityLoginPoco> pocos = new List<SecurityLoginPoco>();
+            var inputList = request.SecLogin.ToList();
+            foreach(var item in inputList)
+            {
+                var poco = new SecurityLoginPoco();
+                poco.Id = Guid.Parse(item.Id);
+                poco.Login = item.Login;
+                poco.Password = item.Password;
+                poco.Created = item.Created.ToDateTime();
+                poco.PasswordUpdate = item.PasswordUpdate.ToDateTime();
+                poco.AgreementAccepted = item.AgreementAccepted.ToDateTime();
+                poco.IsLocked = item.IsLocked;
+                poco.IsInactive = item.IsInactive;
+                poco.EmailAddress = item.EmailAddress;
+                poco.PhoneNumber = item.PhoneNumber;
+                poco.FullName = item.FullName;
+                poco.ForceChangePassword = item.ForceChangePassword;
+                poco.PrefferredLanguage = item.PrefferredLanguage;
+                pocos.Add(poco);
+            }
+            return pocos;
         }
     }
 }

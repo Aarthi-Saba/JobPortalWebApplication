@@ -7,9 +7,10 @@ package CareerCloud.gRPC;
 
 service CompanyJob{
 	rpc GetCompanyJob(ComJobIdRequest) returns (ComJobProto);
-	rpc UpdateCompanyJob(ComJobProto) returns (google.protobuf.Empty);
-	rpc CreateCompanyJob(ComJobProto) returns (google.protobuf.Empty);
-	rpc DeleteCompanyJob(ComJobProto) returns (google.protobuf.Empty);
+    rpc GetAllCompanyJob(google.protobuf.Empty) returns(ComJobArray);
+	rpc UpdateCompanyJob(ComJobArray) returns (google.protobuf.Empty);
+	rpc CreateCompanyJob(ComJobArray) returns (google.protobuf.Empty);
+	rpc DeleteCompanyJob(ComJobArray) returns (google.protobuf.Empty);
 }
 
 message ComJobIdRequest{
@@ -22,4 +23,7 @@ message ComJobProto{
         google.protobuf.Timestamp ProfileCreated = 3;
         bool IsInactive = 4;
         bool IsCompanyHidden = 5;
+}
+message  ComJobArray{
+    repeated ComJobProto ComJob = 1;
 }

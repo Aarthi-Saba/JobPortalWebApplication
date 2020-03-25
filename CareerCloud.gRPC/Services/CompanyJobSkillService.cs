@@ -23,7 +23,7 @@ namespace CareerCloud.gRPC.Services
         public override Task<ComJobSkillProto> GetCompanyJobSkill(ComJobSkillIdRequest request, ServerCallContext context)
         {
             CompanyJobSkillPoco poco = _logic.Get(Guid.Parse(request.Id));
-            if(poco is null)
+            if (poco is null)
             {
                 throw new ArgumentOutOfRangeException("Id does not exist");
             }
@@ -37,47 +37,56 @@ namespace CareerCloud.gRPC.Services
                     Importance = poco.Importance
                 });
         }
-        public override Task<Empty> CreateCompanyJobSkill(ComJobSkillProto request, ServerCallContext context)
+        public override Task<ComJobSkillArray> GetAllCompanyJobSkill(Empty request, ServerCallContext context)
         {
-            CompanyJobSkillPoco[] pocos = new CompanyJobSkillPoco[1];
-            foreach(var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Job = Guid.Parse(request.Job);
-                poco.Skill = request.Skill;
-                poco.SkillLevel = request.SkillLevel;
-                poco.Importance = request.Importance;
-            }
-            _logic.Add(pocos);
-            return new Task<Empty>(() => new Empty());
-        }
-        public override Task<Empty> UpdateCompanyJobSkill(ComJobSkillProto request, ServerCallContext context)
-        {
-            CompanyJobSkillPoco[] pocos = new CompanyJobSkillPoco[1];
+            List<CompanyJobSkillPoco> pocos = _logic.GetAll();
+            List<ComJobSkillProto> compJobSkillList = new List<ComJobSkillProto>();
             foreach (var poco in pocos)
             {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Job = Guid.Parse(request.Job);
-                poco.Skill = request.Skill;
-                poco.SkillLevel = request.SkillLevel;
-                poco.Importance = request.Importance;
+                ComJobSkillProto compJobSkill = new ComJobSkillProto();
+                compJobSkill.Id = poco.Id.ToString();
+                compJobSkill.Job = poco.Job.ToString();
+                compJobSkill.Skill = poco.Skill;
+                compJobSkill.SkillLevel = poco.SkillLevel;
+                compJobSkill.Importance = poco.Importance;
+                compJobSkillList.Add(compJobSkill);
             }
-            _logic.Update(pocos);
+            ComJobSkillArray comJobSkillArray = new ComJobSkillArray();
+            comJobSkillArray.ComJobSkill.AddRange(compJobSkillList);
+            return new Task<ComJobSkillArray>(() => comJobSkillArray);
+        }
+        public override Task<Empty> CreateCompanyJobSkill(ComJobSkillArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Add(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
         }
-        public override Task<Empty> DeleteCompanyJobSkill(ComJobSkillProto request, ServerCallContext context)
+        public override Task<Empty> UpdateCompanyJobSkill(ComJobSkillArray request, ServerCallContext context)
         {
-            CompanyJobSkillPoco[] pocos = new CompanyJobSkillPoco[1];
-            foreach (var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Job = Guid.Parse(request.Job);
-                poco.Skill = request.Skill;
-                poco.SkillLevel = request.SkillLevel;
-                poco.Importance = request.Importance;
-            }
-            _logic.Delete(pocos);
+            var pocos = ProtoToPoco(request);
+            _logic.Update(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
+        }
+        public override Task<Empty> DeleteCompanyJobSkill(ComJobSkillArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Delete(pocos.ToArray());
+            return new Task<Empty>(() => new Empty());
+        }
+        public List<CompanyJobSkillPoco> ProtoToPoco(ComJobSkillArray request)
+        {
+            List<CompanyJobSkillPoco> pocos = new List<CompanyJobSkillPoco>();
+            var inputList = request.ComJobSkill.ToList();
+            foreach (var item in inputList)
+            {
+                var poco = new CompanyJobSkillPoco();
+                poco.Job = Guid.Parse(item.Job);
+                poco.Skill = item.Skill;
+                poco.SkillLevel = item.SkillLevel;
+                poco.Importance = item.Importance;
+                pocos.Add(poco);
+            }
+            return pocos;
         }
     }
 }

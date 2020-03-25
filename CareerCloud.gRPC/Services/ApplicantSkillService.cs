@@ -40,56 +40,63 @@ namespace CareerCloud.gRPC.Services
                     EndYear = poco.EndYear
                 });
         }
-        public override Task<Empty> CreateApplicantSkill(AppSkillProto request, ServerCallContext context)
+        public override Task<AppSkillArray> GetAllApplicantSkill(Empty request, ServerCallContext context)
         {
-            ApplicantSkillPoco[] pocos = new ApplicantSkillPoco[1];
+            List<AppSkillProto> appSkillList = new List<AppSkillProto>();
+            List<ApplicantSkillPoco> pocos = _logic.GetAll();
             foreach (var poco in pocos)
             {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Applicant = Guid.Parse(request.Applicant);
-                poco.Skill = request.Skill;
-                poco.SkillLevel = request.SkillLevel;
-                poco.StartMonth = Convert.ToByte(request.StartMonth);
-                poco.StartYear = request.StartYear;
-                poco.EndMonth = Convert.ToByte(request.EndMonth);
-                poco.EndYear = request.EndYear;
+                AppSkillProto appSkill = new AppSkillProto();
+                appSkill.Id = poco.Id.ToString();
+                appSkill.Applicant = poco.Applicant.ToString();
+                appSkill.Skill = poco.Skill;
+                appSkill.SkillLevel = poco.SkillLevel;
+                appSkill.StartMonth = Convert.ToInt32(poco.StartMonth);
+                appSkill.StartYear = poco.StartYear;
+                appSkill.EndMonth = Convert.ToInt32(poco.EndMonth);
+                appSkill.EndYear = poco.EndYear;
+                appSkillList.Add(appSkill);
             }
-            _logic.Add(pocos);
+            AppSkillArray appSkillArray = new AppSkillArray();
+            appSkillArray.AppSkill.AddRange(appSkillList);
+            return new Task<AppSkillArray>(() => appSkillArray);
+        }
+        public override Task<Empty> CreateApplicantSkill(AppSkillArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Add(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
         }
-        public override Task<Empty> UpdateApplicantSkill(AppSkillProto request, ServerCallContext context)
+        public override Task<Empty> UpdateApplicantSkill(AppSkillArray request, ServerCallContext context)
         {
-            ApplicantSkillPoco[] pocos = new ApplicantSkillPoco[1];
-            foreach (var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Applicant = Guid.Parse(request.Applicant);
-                poco.Skill = request.Skill;
-                poco.SkillLevel = request.SkillLevel;
-                poco.StartMonth = Convert.ToByte(request.StartMonth);
-                poco.StartYear = request.StartYear;
-                poco.EndMonth = Convert.ToByte(request.EndMonth);
-                poco.EndYear = request.EndYear;
-            }
-            _logic.Update(pocos);
+            var pocos = ProtoToPoco(request);
+            _logic.Update(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
         }
-        public override Task<Empty> DeleteApplicantSkill(AppSkillProto request, ServerCallContext context)
+        public override Task<Empty> DeleteApplicantSkill(AppSkillArray request, ServerCallContext context)
         {
-            ApplicantSkillPoco[] pocos = new ApplicantSkillPoco[1];
-            foreach (var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Applicant = Guid.Parse(request.Applicant);
-                poco.Skill = request.Skill;
-                poco.SkillLevel = request.SkillLevel;
-                poco.StartMonth = Convert.ToByte(request.StartMonth);
-                poco.StartYear = request.StartYear;
-                poco.EndMonth = Convert.ToByte(request.EndMonth);
-                poco.EndYear = request.EndYear;
-            }
-            _logic.Delete(pocos);
+            var pocos = ProtoToPoco(request);
+            _logic.Delete(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
+        }
+        public List<ApplicantSkillPoco> ProtoToPoco(AppSkillArray request)
+        {
+            List<ApplicantSkillPoco> pocos = new List<ApplicantSkillPoco>();
+            var inputList = request.AppSkill.ToList();
+            foreach (var item in inputList)
+            {
+                ApplicantSkillPoco poco = new ApplicantSkillPoco();
+                poco.Id = Guid.Parse(item.Id);
+                poco.Applicant = Guid.Parse(item.Applicant);
+                poco.Skill = item.Skill;
+                poco.SkillLevel = item.SkillLevel;
+                poco.StartMonth = Convert.ToByte(item.StartMonth);
+                poco.StartYear = item.StartYear;
+                poco.EndMonth = Convert.ToByte(item.EndMonth);
+                poco.EndYear = item.EndYear;
+                pocos.Add(poco);
+            }
+            return pocos;
         }
     }
 }

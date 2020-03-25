@@ -23,7 +23,7 @@ namespace CareerCloud.gRPC.Services
         public override Task<ComJobProto> GetCompanyJob(ComJobIdRequest request, ServerCallContext context)
         {
             CompanyJobPoco poco = _logic.Get(Guid.Parse(request.Id));
-            if(poco is null)
+            if (poco is null)
             {
                 throw new ArgumentOutOfRangeException("No such Id exist !");
             }
@@ -37,47 +37,58 @@ namespace CareerCloud.gRPC.Services
                     IsCompanyHidden = poco.IsCompanyHidden
                 });
         }
-        public override Task<Empty> CreateCompanyJob(ComJobProto request, ServerCallContext context)
+        public override Task<ComJobArray> GetAllCompanyJob(Empty request, ServerCallContext context)
         {
-            CompanyJobPoco[] pocos = new CompanyJobPoco[1];
-            foreach(var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Company = Guid.Parse(request.Company);
-                poco.ProfileCreated = request.ProfileCreated.ToDateTime();
-                poco.IsInactive = request.IsInactive;
-                poco.IsCompanyHidden = request.IsCompanyHidden;
-            }
-            _logic.Add(pocos);
-            return new Task<Empty>(() => new Empty());
-        }
-        public override Task<Empty> UpdateCompanyJob(ComJobProto request, ServerCallContext context)
-        {
-            CompanyJobPoco[] pocos = new CompanyJobPoco[1];
+            List<CompanyJobPoco> pocos = _logic.GetAll();
+            List<ComJobProto> compJobList = new List<ComJobProto>();
             foreach (var poco in pocos)
             {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Company = Guid.Parse(request.Company);
-                poco.ProfileCreated = request.ProfileCreated.ToDateTime();
-                poco.IsInactive = request.IsInactive;
-                poco.IsCompanyHidden = request.IsCompanyHidden;
+                var comJob = new ComJobProto();
+                comJob.Id = poco.Id.ToString();
+                comJob.Company = poco.Company.ToString();
+                comJob.ProfileCreated = Timestamp.FromDateTime(poco.ProfileCreated);
+                comJob.IsInactive = poco.IsInactive;
+                comJob.IsCompanyHidden = poco.IsCompanyHidden;
+                compJobList.Add(comJob);
             }
-            _logic.Update(pocos);
-            return new Task<Empty>(() => new Empty());
+            ComJobArray comJobArray = new ComJobArray();
+            comJobArray.ComJob.AddRange(compJobList);
+            return new Task<ComJobArray>(() => comJobArray);
         }
-        public override Task<Empty> DeleteCompanyJob(ComJobProto request, ServerCallContext context)
+        public override Task<Empty> CreateCompanyJob(ComJobArray request, ServerCallContext context)
         {
-            CompanyJobPoco[] pocos = new CompanyJobPoco[1];
-            foreach (var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Company = Guid.Parse(request.Company);
-                poco.ProfileCreated = request.ProfileCreated.ToDateTime();
-                poco.IsInactive = request.IsInactive;
-                poco.IsCompanyHidden = request.IsCompanyHidden;
-            }
-            _logic.Delete(pocos);
+            var pocos = ProtoToPoco(request);
+            _logic.Add(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
         }
+        public override Task<Empty> UpdateCompanyJob(ComJobArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Update(pocos.ToArray());
+            return new Task<Empty>(() => new Empty());
+        }
+        public override Task<Empty> DeleteCompanyJob(ComJobArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Delete(pocos.ToArray());
+            return new Task<Empty>(() => new Empty());
+        }
+        public List<CompanyJobPoco> ProtoToPoco(ComJobArray request)
+        {
+            List<CompanyJobPoco> pocos = new List<CompanyJobPoco>();
+            var inputList = request.ComJob.ToList();
+            foreach (var item in inputList)
+            {
+                var poco = new CompanyJobPoco();
+                poco.Id = Guid.Parse(item.Id);
+                poco.Company = Guid.Parse(item.Company);
+                poco.ProfileCreated = item.ProfileCreated.ToDateTime();
+                poco.IsInactive = item.IsInactive;
+                poco.IsCompanyHidden = item.IsCompanyHidden;
+                pocos.Add(poco);
+            }
+            return pocos;
+        }
+ 
     }
 }

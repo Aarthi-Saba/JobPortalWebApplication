@@ -6,9 +6,10 @@ package CareerCloud.gRPC;
 
 service SystemCountryCode{
     rpc GetSystemCountryCode(SysCountryIdRequest) returns (SysCountryCodeProto);
-    rpc UpdateSystemCountryCode(SysCountryCodeProto) returns (google.protobuf.Empty);
-    rpc CreateSystemCountryCode(SysCountryCodeProto) returns (google.protobuf.Empty);
-    rpc DeleteSystemCountryCode(SysCountryCodeProto) returns (google.protobuf.Empty);
+    rpc GetAllSystemCountryCode(google.protobuf.Empty) returns(SysCountryCodeArray);
+    rpc UpdateSystemCountryCode(SysCountryCodeArray) returns (google.protobuf.Empty);
+    rpc CreateSystemCountryCode(SysCountryCodeArray) returns (google.protobuf.Empty);
+    rpc DeleteSystemCountryCode(SysCountryCodeArray) returns (google.protobuf.Empty);
 }
 
 message SysCountryIdRequest{
@@ -17,4 +18,7 @@ message SysCountryIdRequest{
 message SysCountryCodeProto{
     string Code = 1;
     string Name = 2;
+}
+message SysCountryCodeArray{
+    repeated SysCountryCodeProto  SysCountryCode = 1;
 }

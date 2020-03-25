@@ -6,9 +6,10 @@ package CareerCloud.gRPC;
 
 service CompanyProfile{
 	rpc GetCompanyProfile(CompProfIdRequest) returns (CompProfileProto);
-	rpc CreateCompanyProfile(CompProfileProto) returns (google.protobuf.Empty);
-	rpc UpdateCompanyProfile(CompProfileProto) returns (google.protobuf.Empty);
-	rpc DeleteCompanyProfile(CompProfileProto) returns (google.protobuf.Empty);
+    rpc GetAllCompanyProfile(google.protobuf.Empty) returns (CompProfileArray);
+	rpc CreateCompanyProfile(CompProfileArray) returns (google.protobuf.Empty);
+	rpc UpdateCompanyProfile(CompProfileArray) returns (google.protobuf.Empty);
+	rpc DeleteCompanyProfile(CompProfileArray) returns (google.protobuf.Empty);
 }
 message CompProfIdRequest{
 	string Id = 1;
@@ -20,4 +21,7 @@ message CompProfileProto{
     string ContactPhone = 4;
     string ContactName = 5;
     bytes CompanyLogo = 6;
+}
+message CompProfileArray{
+    repeated CompProfileProto CompProfile = 1;
 }

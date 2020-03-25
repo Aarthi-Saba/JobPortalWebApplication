@@ -6,9 +6,10 @@ package CareerCloud.gRPC;
 
 service CompanyJobDescription{
 	rpc GetCompanyJobDescription(CompJobDescIdRequest) returns (CompJobDescProto);
-	rpc CreateCompanyJobDescription(CompJobDescProto) returns (google.protobuf.Empty);
-	rpc UpdateCompanyJobDescription(CompJobDescProto) returns (google.protobuf.Empty);
-	rpc DeleteCompanyJobDescription(CompJobDescProto) returns (google.protobuf.Empty);
+    rpc GetAllCompanyDescription(google.protobuf.Empty) returns(CompJobDescArray);
+	rpc CreateCompanyJobDescription(CompJobDescArray) returns (google.protobuf.Empty);
+	rpc UpdateCompanyJobDescription(CompJobDescArray) returns (google.protobuf.Empty);
+	rpc DeleteCompanyJobDescription(CompJobDescArray) returns (google.protobuf.Empty);
 }
 
 message CompJobDescIdRequest{
@@ -20,4 +21,7 @@ message CompJobDescProto{
         string Job = 2;
         string JobName = 3;
 		string JobDescriptions = 4;
+}
+message CompJobDescArray{
+    repeated CompJobDescProto CompJobDesc = 1;
 }

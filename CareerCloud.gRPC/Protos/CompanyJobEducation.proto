@@ -6,9 +6,10 @@ package CareerCloud.gRPC;
 
 service CompanyJobEducation{
 	rpc GetCompanyJobEducation(ComJobEduIdRequest) returns (ComJobEduProto);
-	rpc CreateCompanyJobEducation(ComJobEduProto) returns (google.protobuf.Empty);
-	rpc UpdateCompanyJobEducation(ComJobEduProto) returns (google.protobuf.Empty);
-	rpc DeleteCompanyJobEducation(ComJobEduProto) returns (google.protobuf.Empty);
+    rpc GetAllCompanyJobEducation(google.protobuf.Empty) returns(ComJobEduArray);
+	rpc CreateCompanyJobEducation(ComJobEduArray) returns (google.protobuf.Empty);
+	rpc UpdateCompanyJobEducation(ComJobEduArray) returns (google.protobuf.Empty);
+	rpc DeleteCompanyJobEducation(ComJobEduArray) returns (google.protobuf.Empty);
 }
 
 message ComJobEduIdRequest{
@@ -20,4 +21,7 @@ message ComJobEduProto{
         string Job = 2;
         string Major = 3;
         int32 Importance = 4;
+}
+message ComJobEduArray{
+    repeated ComJobEduProto ComJobEdu= 1;
 }

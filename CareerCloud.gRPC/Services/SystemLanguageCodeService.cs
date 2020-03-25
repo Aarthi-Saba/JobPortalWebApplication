@@ -23,7 +23,7 @@ namespace CareerCloud.gRPC.Services
         public override Task<SysLangCodeProto> GetSystemLanguageCode(SysLangIdRequest request, ServerCallContext context)
         {
             SystemLanguageCodePoco poco = _logic.Get(request.LangId);
-            if(poco is null)
+            if (poco is null)
             {
                 throw new ArgumentOutOfRangeException("Invalid LangId ");
             }
@@ -35,41 +35,53 @@ namespace CareerCloud.gRPC.Services
                     NativeName = poco.NativeName
                 });
         }
-        public override Task<Empty> CreateSystemKLanguageCode(SysLangCodeProto request, ServerCallContext context)
+        public override Task<SysLangCodeArray> GetAllSystemLanguageCode(Empty request, ServerCallContext context)
         {
-            SystemLanguageCodePoco[] pocos = new SystemLanguageCodePoco[1];
-            foreach(var poco in pocos)
-            {
-                poco.LanguageID = request.LangId;
-                poco.Name = request.Name;
-                poco.NativeName = request.NativeName;
-            }
-            _logic.Add(pocos);
-            return new Task<Empty>(() => new Empty());
-        }
-        public override Task<Empty> UpdateSystemLanguageCode(SysLangCodeProto request, ServerCallContext context)
-        {
-            SystemLanguageCodePoco[] pocos = new SystemLanguageCodePoco[1];
+            List<SystemLanguageCodePoco> pocos = _logic.GetAll();
+            List<SysLangCodeProto> sysLangCodeList = new List<SysLangCodeProto>();
             foreach (var poco in pocos)
             {
-                poco.LanguageID = request.LangId;
-                poco.Name = request.Name;
-                poco.NativeName = request.NativeName;
+                SysLangCodeProto sysLangCode = new SysLangCodeProto();
+                sysLangCode.LangId = poco.LanguageID;
+                sysLangCode.Name = poco.Name;
+                sysLangCode.NativeName = poco.NativeName;
+                sysLangCodeList.Add(sysLangCode);
             }
-            _logic.Update(pocos);
+            SysLangCodeArray sysLangCodeArray = new SysLangCodeArray();
+            sysLangCodeArray.SysLangCode.AddRange(sysLangCodeList);
+            return new Task<SysLangCodeArray>(() => sysLangCodeArray);
+        }
+        public override Task<Empty> CreateSystemKLanguageCode(SysLangCodeArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Add(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
         }
-        public override Task<Empty> DeleteSystemLanguageCode(SysLangCodeProto request, ServerCallContext context)
+        public override Task<Empty> UpdateSystemLanguageCode(SysLangCodeArray request, ServerCallContext context)
         {
-            SystemLanguageCodePoco[] pocos = new SystemLanguageCodePoco[1];
-            foreach (var poco in pocos)
-            {
-                poco.LanguageID = request.LangId;
-                poco.Name = request.Name;
-                poco.NativeName = request.NativeName;
-            }
-            _logic.Delete(pocos);
+            var pocos = ProtoToPoco(request);
+            _logic.Update(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
+        }
+        public override Task<Empty> DeleteSystemLanguageCode(SysLangCodeArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Delete(pocos.ToArray());
+            return new Task<Empty>(() => new Empty());
+        }
+        public List<SystemLanguageCodePoco> ProtoToPoco(SysLangCodeArray request)
+        {
+            List<SystemLanguageCodePoco> pocos = new List<SystemLanguageCodePoco>();
+            var inputList = request.SysLangCode.ToList();
+            foreach (var item in inputList)
+            {
+                var poco = new SystemLanguageCodePoco();
+                poco.LanguageID = item.LangId;
+                poco.Name = item.Name;
+                poco.NativeName = item.NativeName;
+                pocos.Add(poco);
+            }
+            return pocos;
         }
     }
 }

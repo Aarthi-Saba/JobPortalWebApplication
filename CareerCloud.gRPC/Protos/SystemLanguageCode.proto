@@ -6,9 +6,10 @@ package CareerCloud.gRPC;
 
 service SystemLanguageCode{
     rpc GetSystemLanguageCode(SysLangIdRequest) returns (SysLangCodeProto);
-    rpc UpdateSystemLanguageCode(SysLangCodeProto) returns (google.protobuf.Empty);
-    rpc CreateSystemKLanguageCode(SysLangCodeProto) returns (google.protobuf.Empty);
-    rpc DeleteSystemLanguageCode(SysLangCodeProto) returns (google.protobuf.Empty);
+    rpc GetAllSystemLanguageCode(google.protobuf.Empty) returns(SysLangCodeArray);
+    rpc UpdateSystemLanguageCode(SysLangCodeArray) returns (google.protobuf.Empty);
+    rpc CreateSystemKLanguageCode(SysLangCodeArray) returns (google.protobuf.Empty);
+    rpc DeleteSystemLanguageCode(SysLangCodeArray) returns (google.protobuf.Empty);
 }
 
 message SysLangIdRequest{
@@ -18,4 +19,7 @@ message SysLangCodeProto{
     string LangId = 1;
     string Name = 2;
     string NativeName = 3;
+}
+message SysLangCodeArray{
+    repeated SysLangCodeProto SysLangCode = 1;
 }

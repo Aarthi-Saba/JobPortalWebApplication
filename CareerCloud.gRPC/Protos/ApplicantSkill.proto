@@ -6,9 +6,10 @@ package CareerCloud.gRPC;
 
 service ApplicantSkill{
 	rpc GetApplicantSkill(AppSkillIdRequest) returns (AppSkillProto);
-	rpc CreateApplicantSkill(AppSkillProto) returns (google.protobuf.Empty);
-	rpc UpdateApplicantSkill(AppSkillProto) returns (google.protobuf.Empty);
-	rpc DeleteApplicantSkill(AppSkillProto) returns (google.protobuf.Empty);
+    rpc GetAllApplicantSkill(google.protobuf.Empty) returns(AppSkillArray);
+	rpc CreateApplicantSkill(AppSkillArray) returns (google.protobuf.Empty);
+	rpc UpdateApplicantSkill(AppSkillArray) returns (google.protobuf.Empty);
+	rpc DeleteApplicantSkill(AppSkillArray) returns (google.protobuf.Empty);
 }
 
 message AppSkillIdRequest{
@@ -24,4 +25,7 @@ message AppSkillProto{
         int32 StartYear = 6;
         int32 EndMonth = 7;
         int32 EndYear = 8;
+}
+message AppSkillArray{
+    repeated AppSkillProto AppSkill = 1;
 }

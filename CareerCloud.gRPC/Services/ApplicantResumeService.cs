@@ -20,11 +20,10 @@ namespace CareerCloud.gRPC.Services
         {
             _logic = new ApplicantResumeLogic(new EFGenericRepository<ApplicantResumePoco>());
         }
-
         public override Task<AppResumeProto> GetApplicantResume(AppResumeIdRequest request, ServerCallContext context)
         {
             ApplicantResumePoco poco = _logic.Get(Guid.Parse(request.Id));
-            if(poco is null)
+            if (poco is null)
             {
                 throw new ArgumentOutOfRangeException("Id not found in system");
             }
@@ -37,47 +36,56 @@ namespace CareerCloud.gRPC.Services
                     LastUpdated = poco.LastUpdated is null ? null : Timestamp.FromDateTime((DateTime)poco.LastUpdated)
                 });
         }
-
-        public override Task<Empty> CreateApplicantResume(AppResumeProto request, ServerCallContext context)
+        public override Task<AppResumeArray> GetAllApplicantResume(Empty request, ServerCallContext context)
         {
-            ApplicantResumePoco[] pocos = new ApplicantResumePoco[1];
-            foreach(var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Applicant = Guid.Parse(request.Applicant);
-                poco.Resume = request.Resume;
-                poco.LastUpdated = request.LastUpdated.ToDateTime();
-            }
-            _logic.Add(pocos);
-            return new Task<Empty>(() => new Empty());
-
-        }
-        public override Task<Empty> UpdateApplicantResume(AppResumeProto request, ServerCallContext context)
-        {
-            ApplicantResumePoco[] pocos = new ApplicantResumePoco[1];
+            List<ApplicantResumePoco> pocos = _logic.GetAll();
+            List<AppResumeProto> appResumeList = new List<AppResumeProto>();
             foreach (var poco in pocos)
             {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Applicant = Guid.Parse(request.Applicant);
-                poco.Resume = request.Resume;
-                poco.LastUpdated = request.LastUpdated.ToDateTime();
+                AppResumeProto appResume = new AppResumeProto();
+                appResume.Id = poco.Id.ToString();
+                appResume.Applicant = poco.Applicant.ToString();
+                appResume.Resume = poco.Resume;
+                appResume.LastUpdated = poco.LastUpdated is null ? null : Timestamp.FromDateTime((DateTime)poco.LastUpdated);
+                appResumeList.Add(appResume);
             }
-            _logic.Update(pocos);
-            return new Task<Empty>(() => new Empty());
-
+            AppResumeArray appResumeArray = new AppResumeArray();
+            appResumeArray.AppResume.AddRange(appResumeList);
+            return new Task<AppResumeArray>(() => appResumeArray);
         }
-        public override Task<Empty> DeleteApplicantResume(AppResumeProto request, ServerCallContext context)
+
+        public override Task<Empty> CreateApplicantResume(AppResumeArray request, ServerCallContext context)
         {
-            ApplicantResumePoco[] pocos = new ApplicantResumePoco[1];
-            foreach (var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Applicant = Guid.Parse(request.Applicant);
-                poco.Resume = request.Resume;
-                poco.LastUpdated = request.LastUpdated.ToDateTime();
-            }
-            _logic.Delete(pocos);
+            var pocos = ProtoToPoco(request);
+            _logic.Add(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
+        }
+        public override Task<Empty> UpdateApplicantResume(AppResumeArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Add(pocos.ToArray());
+            return new Task<Empty>(() => new Empty());
+        }
+        public override Task<Empty> DeleteApplicantResume(AppResumeArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Add(pocos.ToArray());
+            return new Task<Empty>(() => new Empty());
+        }
+        public List<ApplicantResumePoco> ProtoToPoco(AppResumeArray request)
+        {
+            List<ApplicantResumePoco> pocos = new List<ApplicantResumePoco>();
+            var inputList = request.AppResume.ToList();
+            foreach (var item in inputList)
+            {
+                var poco = new ApplicantResumePoco();
+                poco.Id = Guid.Parse(item.Id);
+                poco.Applicant = Guid.Parse(item.Applicant);
+                poco.Resume = item.Resume;
+                poco.LastUpdated = item.LastUpdated.ToDateTime();
+                pocos.Add(poco);
+            }            
+            return pocos;
         }
     }
 

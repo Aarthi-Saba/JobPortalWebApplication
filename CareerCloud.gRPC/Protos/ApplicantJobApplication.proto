@@ -8,9 +8,10 @@ package CareerCloud.gRPC;
 
 service ApplicantJobApplication{
 	rpc GetApplicantJobApplication(AppJobIdRequest) returns (AppJobProto);
-	rpc CreateApplicantJobApplication(AppJobProto) returns(google.protobuf.Empty);
-	rpc UpdateApplicantJobApplication(AppJobProto) returns (google.protobuf.Empty);
-	rpc DeleteApplicantJobApplication(AppJobProto) returns (google.protobuf.Empty);
+    rpc GetAllApplicantJobApplication(google.protobuf.Empty) returns(AppJobArray);
+	rpc CreateApplicantJobApplication(AppJobArray) returns(google.protobuf.Empty);
+	rpc UpdateApplicantJobApplication(AppJobArray) returns (google.protobuf.Empty);
+	rpc DeleteApplicantJobApplication(AppJobArray) returns (google.protobuf.Empty);
 }
 
 message AppJobIdRequest{
@@ -22,4 +23,8 @@ message AppJobProto{
         string Applicant = 2;
         string Job = 3;
 		google.protobuf.Timestamp ApplicationDate = 4 ;
+}
+
+message AppJobArray{
+    repeated AppJobProto AppJob = 1;
 }

@@ -6,9 +6,10 @@ package CareerCloud.gRPC;
 
 service CompanyLocation{
 	rpc GetCompanyLocation(CompLocIdRequest) returns (CompLocProto);
-	rpc CreateCompanyLocation(CompLocProto) returns (google.protobuf.Empty);
-	rpc UpdateCompanyLocation(CompLocProto) returns (google.protobuf.Empty);
-	rpc DeleteCompanyLocation(CompLocProto) returns (google.protobuf.Empty);
+    rpc GetAllCompanyLocation(google.protobuf.Empty) returns(CompLocArray);
+	rpc CreateCompanyLocation(CompLocArray) returns (google.protobuf.Empty);
+	rpc UpdateCompanyLocation(CompLocArray) returns (google.protobuf.Empty);
+	rpc DeleteCompanyLocation(CompLocArray) returns (google.protobuf.Empty);
 }
 message CompLocIdRequest{
 	string Id = 1;
@@ -21,4 +22,7 @@ message CompLocProto{
     string Street = 5;
     string City = 6;
     string PostalCode = 7;
+}
+message CompLocArray{
+    repeated CompLocProto CompLoc = 1;
 }

@@ -8,9 +8,10 @@ package CareerCloud.gRPC;
 
 service ApplicantResume{
 	rpc GetApplicantResume(AppResumeIdRequest) returns (AppResumeProto);
-	rpc CreateApplicantResume(AppResumeProto) returns(google.protobuf.Empty);
-	rpc UpdateApplicantResume(AppResumeProto) returns (google.protobuf.Empty);
-	rpc DeleteApplicantResume(AppResumeProto) returns (google.protobuf.Empty);
+    rpc GetAllApplicantResume(google.protobuf.Empty) returns (AppResumeArray);
+	rpc CreateApplicantResume(AppResumeArray) returns(google.protobuf.Empty);
+	rpc UpdateApplicantResume(AppResumeArray) returns (google.protobuf.Empty);
+	rpc DeleteApplicantResume(AppResumeArray) returns (google.protobuf.Empty);
 }
 
 message AppResumeIdRequest{
@@ -22,4 +23,7 @@ message AppResumeProto{
         string Applicant = 2;
 		string Resume = 3;
         google.protobuf.Timestamp LastUpdated = 4;
+}
+message AppResumeArray{
+    repeated AppResumeProto AppResume = 1;
 }

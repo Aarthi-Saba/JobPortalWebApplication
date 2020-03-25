@@ -23,7 +23,7 @@ namespace CareerCloud.gRPC.Services
         public override Task<CompLocProto> GetCompanyLocation(CompLocIdRequest request, ServerCallContext context)
         {
             CompanyLocationPoco poco = _logic.Get(Guid.Parse(request.Id));
-            if(poco is null)
+            if (poco is null)
             {
                 throw new ArgumentOutOfRangeException("Id does not exist");
             }
@@ -39,53 +39,61 @@ namespace CareerCloud.gRPC.Services
                     CountryCode = poco.CountryCode
                 });
         }
-        public override Task<Empty> CreateCompanyLocation(CompLocProto request, ServerCallContext context)
+        public override Task<CompLocArray> GetAllCompanyLocation(Empty request, ServerCallContext context)
         {
-            CompanyLocationPoco[] pocos = new CompanyLocationPoco[1];
-            foreach(var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Company = Guid.Parse(request.Company);
-                poco.City = request.City;
-                poco.PostalCode = request.PostalCode;
-                poco.Province = request.Province;
-                poco.Street = request.Street;
-                poco.CountryCode = request.CountryCode;
-            }
-            _logic.Add(pocos);
-            return new Task<Empty>(() => new Empty());
-        }
-        public override Task<Empty> UpdateCompanyLocation(CompLocProto request, ServerCallContext context)
-        {
-            CompanyLocationPoco[] pocos = new CompanyLocationPoco[1];
+            List<CompanyLocationPoco> pocos = _logic.GetAll();
+            List<CompLocProto> compLocList = new List<CompLocProto>();
             foreach (var poco in pocos)
             {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Company = Guid.Parse(request.Company);
-                poco.City = request.City;
-                poco.PostalCode = request.PostalCode;
-                poco.Province = request.Province;
-                poco.Street = request.Street;
-                poco.CountryCode = request.CountryCode;
+                CompLocProto compLoc = new CompLocProto();
+                compLoc.Id = poco.Id.ToString();
+                compLoc.Company = poco.Company.ToString();
+                compLoc.PostalCode = poco.PostalCode;
+                compLoc.Province = poco.Province;
+                compLoc.Street = poco.Street;
+                compLoc.City = poco.City;
+                compLoc.CountryCode = poco.CountryCode;
+                compLocList.Add(compLoc);
             }
-            _logic.Update(pocos);
+            CompLocArray compLocArray = new CompLocArray();
+            compLocArray.CompLoc.AddRange(compLocList);
+            return new Task<CompLocArray>(() => compLocArray);
+        }
+        public override Task<Empty> CreateCompanyLocation(CompLocArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Add(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
         }
-        public override Task<Empty> DeleteCompanyLocation(CompLocProto request, ServerCallContext context)
+        public override Task<Empty> UpdateCompanyLocation(CompLocArray request, ServerCallContext context)
         {
-            CompanyLocationPoco[] pocos = new CompanyLocationPoco[1];
-            foreach (var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Company = Guid.Parse(request.Company);
-                poco.City = request.City;
-                poco.PostalCode = request.PostalCode;
-                poco.Province = request.Province;
-                poco.Street = request.Street;
-                poco.CountryCode = request.CountryCode;
-            }
-            _logic.Delete(pocos);
+            var pocos = ProtoToPoco(request);
+            _logic.Update(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
+        }
+        public override Task<Empty> DeleteCompanyLocation(CompLocArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Delete(pocos.ToArray());
+            return new Task<Empty>(() => new Empty());
+        }
+        public List<CompanyLocationPoco> ProtoToPoco(CompLocArray request)
+        {
+            List<CompanyLocationPoco> pocos = new List<CompanyLocationPoco>();
+            var inputList = request.CompLoc.ToList();
+            foreach (var item in inputList)
+            {
+                var poco = new CompanyLocationPoco();
+                poco.Id = Guid.Parse(item.Id);
+                poco.Company = Guid.Parse(item.Company);
+                poco.City = item.City;
+                poco.PostalCode = item.PostalCode;
+                poco.Province = item.Province;
+                poco.Street = item.Street;
+                poco.CountryCode = item.CountryCode;
+                pocos.Add(poco);
+            }
+            return pocos;
         }
     }
 }

@@ -43,65 +43,70 @@ namespace CareerCloud.gRPC.Services
                     EndYear = poco.EndYear
                 });
         }
-        public override Task<Empty> CreateApplicantWorkHistory(AppWorkProto request, ServerCallContext context)
+        public override Task<AppWorkHistoryArray> GetAllApplicantWorkHistory(Empty request, ServerCallContext context)
         {
-            ApplicantWorkHistoryPoco[] pocos = new ApplicantWorkHistoryPoco[1];
-            foreach(var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Applicant = Guid.Parse(request.Applicant);
-                poco.CompanyName = request.CompanyName;
-                poco.CountryCode = request.CountryCode;
-                poco.Location = request.Location;
-                poco.JobTitle = request.JobTitle;
-                poco.JobDescription = request.JobDescription;
-                poco.StartMonth = Convert.ToInt16(request.StartMonth);
-                poco.StartYear = request.StartYear;
-                poco.EndMonth = Convert.ToInt16(request.EndMonth);
-                poco.EndYear = request.EndYear;
-            }
-            _logic.Add(pocos);
-            return new Task<Empty>(() => new Empty());
-        }
-        public override Task<Empty> UpdateApplicantWorkHistory(AppWorkProto request, ServerCallContext context)
-        {
-            ApplicantWorkHistoryPoco[] pocos = new ApplicantWorkHistoryPoco[1];
+            List<AppWorkProto> appWorkList = new List<AppWorkProto>();
+            List<ApplicantWorkHistoryPoco> pocos = _logic.GetAll();
             foreach (var poco in pocos)
             {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Applicant = Guid.Parse(request.Applicant);
-                poco.CompanyName = request.CompanyName;
-                poco.CountryCode = request.CountryCode;
-                poco.Location = request.Location;
-                poco.JobTitle = request.JobTitle;
-                poco.JobDescription = request.JobDescription;
-                poco.StartMonth = Convert.ToInt16(request.StartMonth);
-                poco.StartYear = request.StartYear;
-                poco.EndMonth = Convert.ToInt16(request.EndMonth);
-                poco.EndYear = request.EndYear;
+                AppWorkProto appWork = new AppWorkProto();
+                appWork.Id = poco.Id.ToString();
+                appWork.Applicant = poco.Applicant.ToString();
+                appWork.CompanyName = poco.CompanyName;
+                appWork.CountryCode = poco.CountryCode;
+                appWork.Location = poco.Location;
+                appWork.JobTitle = poco.JobTitle;
+                appWork.JobDescription = poco.JobDescription;
+                appWork.StartMonth = Convert.ToInt32(poco.StartMonth);
+                appWork.StartYear = poco.StartYear;
+                appWork.EndMonth = Convert.ToInt32(poco.EndMonth);
+                appWork.EndYear = poco.EndYear;
+                appWorkList.Add(appWork);
             }
-            _logic.Update(pocos);
-            return new Task<Empty>(() => new Empty());
+            AppWorkHistoryArray appWorkArray = new AppWorkHistoryArray();
+            appWorkArray.AppWork.AddRange(appWorkList);
+            return new Task<AppWorkHistoryArray>(() => appWorkArray);
         }
-        public override Task<Empty> DeleteApplicantWorkHistory(AppWorkProto request, ServerCallContext context)
+        public override Task<Empty> CreateApplicantWorkHistory(AppWorkHistoryArray request, ServerCallContext context)
         {
-            ApplicantWorkHistoryPoco[] pocos = new ApplicantWorkHistoryPoco[1];
-            foreach (var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Applicant = Guid.Parse(request.Applicant);
-                poco.CompanyName = request.CompanyName;
-                poco.CountryCode = request.CountryCode;
-                poco.Location = request.Location;
-                poco.JobTitle = request.JobTitle;
-                poco.JobDescription = request.JobDescription;
-                poco.StartMonth = Convert.ToInt16(request.StartMonth);
-                poco.StartYear = request.StartYear;
-                poco.EndMonth = Convert.ToInt16(request.EndMonth);
-                poco.EndYear = request.EndYear;
-            }
-            _logic.Delete(pocos);
+            var pocos = ProtoToPoco(request);
+            _logic.Add(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
         }
+        public override Task<Empty> UpdateApplicantWorkHistory(AppWorkHistoryArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Update(pocos.ToArray());
+            return new Task<Empty>(() => new Empty());
+        }
+        public override Task<Empty> DeleteApplicantWorkHistory(AppWorkHistoryArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Delete(pocos.ToArray());
+            return new Task<Empty>(() => new Empty());
+        }
+        public List<ApplicantWorkHistoryPoco> ProtoToPoco(AppWorkHistoryArray request)
+        {
+            List<ApplicantWorkHistoryPoco> pocos = new List<ApplicantWorkHistoryPoco>();
+            var inputList = request.AppWork.ToList();
+            foreach (var item in inputList)
+            {
+                ApplicantWorkHistoryPoco poco = new ApplicantWorkHistoryPoco();
+                poco.Id = Guid.Parse(item.Id);
+                poco.Applicant = Guid.Parse(item.Applicant);
+                poco.CompanyName = item.CompanyName;
+                poco.CountryCode = item.CountryCode;
+                poco.Location = item.Location;
+                poco.JobTitle = item.JobTitle;
+                poco.JobDescription = item.JobDescription;
+                poco.StartMonth = Convert.ToInt16(item.StartMonth);
+                poco.StartYear = item.StartYear;
+                poco.EndMonth = Convert.ToInt16(item.EndMonth);
+                poco.EndYear = item.EndYear;
+                pocos.Add(poco);
+            }
+            return pocos;
+        }
+
     }
 }

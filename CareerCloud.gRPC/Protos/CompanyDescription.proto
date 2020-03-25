@@ -6,9 +6,10 @@ package CareerCloud.gRPC;
 
 service CompanyDescription{
 	rpc GetCompanyDescription(CompDescIdRequest) returns (CompDescProto);
-	rpc CreateCompanyDescription(CompDescProto) returns (google.protobuf.Empty);
-	rpc UpdateCompanyDescription(CompDescProto) returns (google.protobuf.Empty);
-	rpc DeleteCompanyDescription(CompDescProto) returns (google.protobuf.Empty);
+    rpc GetAllCompanyDescription(google.protobuf.Empty) returns(CompDescArray);
+	rpc CreateCompanyDescription(CompDescArray) returns (google.protobuf.Empty);
+	rpc UpdateCompanyDescription(CompDescArray) returns (google.protobuf.Empty);
+	rpc DeleteCompanyDescription(CompDescArray) returns (google.protobuf.Empty);
 }
 
 message CompDescIdRequest{
@@ -21,4 +22,7 @@ message CompDescProto{
     string LanguageId = 3;
     string CompanyName = 4;
     string CompanyDescription = 5;
+}
+message CompDescArray{
+    repeated CompDescProto CompDesc = 1;
 }

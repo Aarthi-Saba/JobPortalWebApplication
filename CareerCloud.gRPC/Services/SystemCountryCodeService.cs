@@ -34,38 +34,51 @@ namespace CareerCloud.gRPC.Services
                     Name = poco.Name
                 });
         }
-        public override Task<Empty> CreateSystemCountryCode(SysCountryCodeProto request, ServerCallContext context)
+        public override Task<SysCountryCodeArray> GetAllSystemCountryCode(Empty request, ServerCallContext context)
         {
-            SystemCountryCodePoco[] pocos = new SystemCountryCodePoco[1];
-            foreach(var poco in pocos)
-            {
-                poco.Code = request.Code;
-                poco.Name = request.Name;
-            }
-            _logic.Add(pocos);
-            return new Task<Empty>(() => new Empty());            
-        }
-        public override Task<Empty> UpdateSystemCountryCode(SysCountryCodeProto request, ServerCallContext context)
-        {
-            SystemCountryCodePoco[] pocos = new SystemCountryCodePoco[1];
+            List<SystemCountryCodePoco> pocos = _logic.GetAll();
+            List<SysCountryCodeProto> sysCountryCodeList = new List<SysCountryCodeProto>();
             foreach (var poco in pocos)
             {
-                poco.Code = request.Code;
-                poco.Name = request.Name;
+                SysCountryCodeProto sysCountryCode = new SysCountryCodeProto();
+                sysCountryCode.Code = poco.Code;
+                sysCountryCode.Name = poco.Name;
+                sysCountryCodeList.Add(sysCountryCode);
             }
-            _logic.Update(pocos);
+            SysCountryCodeArray sysCountryCodeArray = new SysCountryCodeArray();
+            sysCountryCodeArray.SysCountryCode.AddRange(sysCountryCodeList);
+            return new Task<SysCountryCodeArray>(() => sysCountryCodeArray);
+        }
+        public override Task<Empty> CreateSystemCountryCode(SysCountryCodeArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Add(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
         }
-        public override Task<Empty> DeleteSystemCountryCode(SysCountryCodeProto request, ServerCallContext context)
+        public override Task<Empty> UpdateSystemCountryCode(SysCountryCodeArray request, ServerCallContext context)
         {
-            SystemCountryCodePoco[] pocos = new SystemCountryCodePoco[1];
-            foreach (var poco in pocos)
-            {
-                poco.Code = request.Code;
-                poco.Name = request.Name;
-            }
-            _logic.Delete(pocos);
+            var pocos = ProtoToPoco(request);
+            _logic.Update(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
+        }
+        public override Task<Empty> DeleteSystemCountryCode(SysCountryCodeArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Delete(pocos.ToArray());
+            return new Task<Empty>(() => new Empty());
+        }
+        public List<SystemCountryCodePoco> ProtoToPoco(SysCountryCodeArray request)
+        {
+            List<SystemCountryCodePoco> pocos = new List<SystemCountryCodePoco>();
+            var inputList = request.SysCountryCode.ToList();
+            foreach (var item in inputList)
+            {
+                var poco = new SystemCountryCodePoco();
+                poco.Code = item.Code;
+                poco.Name = item.Name;
+                pocos.Add(poco);
+            }
+            return pocos;
         }
     }
 }

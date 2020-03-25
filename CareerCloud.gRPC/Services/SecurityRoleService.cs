@@ -23,7 +23,7 @@ namespace CareerCloud.gRPC.Services
         public override Task<SecRoleProto> GetSecurityRole(SecRoleIdRequest request, ServerCallContext context)
         {
             SecurityRolePoco poco = _logic.Get(Guid.Parse(request.Id));
-            if(poco is null)
+            if (poco is null)
             {
                 throw new ArgumentOutOfRangeException("Invalid Id");
             }
@@ -35,41 +35,54 @@ namespace CareerCloud.gRPC.Services
                     IsInactive = poco.IsInactive
                 });
         }
-        public override Task<Empty> CreateSecurityRole(SecRoleProto request, ServerCallContext context)
+        public override Task<SecRoleArray> GetAllSecurityRole(Empty request, ServerCallContext context)
         {
-            SecurityRolePoco[] pocos = new SecurityRolePoco[1];
-            foreach(var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Role = request.Role;
-                poco.IsInactive = request.IsInactive;
-            }
-            _logic.Add(pocos);
-            return new Task<Empty>(() => new Empty());
-        }
-        public override Task<Empty> UpdateSecurityRole(SecRoleProto request, ServerCallContext context)
-        {
-            SecurityRolePoco[] pocos = new SecurityRolePoco[1];
+            List<SecurityRolePoco> pocos = _logic.GetAll();
+            List<SecRoleProto> secRoleList = new List<SecRoleProto>();
             foreach (var poco in pocos)
             {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Role = request.Role;
-                poco.IsInactive = request.IsInactive;
+                SecRoleProto secRole = new SecRoleProto();
+                secRole.Id = poco.Id.ToString();
+                secRole.Role = poco.Role;
+                secRole.IsInactive = poco.IsInactive;
+                secRoleList.Add(secRole);
             }
-            _logic.Update(pocos);
+            SecRoleArray secRoleArray = new SecRoleArray();
+            secRoleArray.SecRole.AddRange(secRoleList);
+            return new Task<SecRoleArray>(() => secRoleArray);
+        }
+        public override Task<Empty> CreateSecurityRole(SecRoleArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Add(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
         }
-        public override Task<Empty> DeleteSecurityRole(SecRoleProto request, ServerCallContext context)
+        public override Task<Empty> UpdateSecurityRole(SecRoleArray request, ServerCallContext context)
         {
-            SecurityRolePoco[] pocos = new SecurityRolePoco[1];
-            foreach (var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Role = request.Role;
-                poco.IsInactive = request.IsInactive;
-            }
-            _logic.Delete(pocos);
+            var pocos = ProtoToPoco(request);
+            _logic.Update(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
+        }
+        public override Task<Empty> DeleteSecurityRole(SecRoleArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Delete(pocos.ToArray());
+            return new Task<Empty>(() => new Empty());
+        }
+
+        public List<SecurityRolePoco> ProtoToPoco(SecRoleArray request)
+        {
+            List<SecurityRolePoco> pocos = new List<SecurityRolePoco>();
+            var inputList = request.SecRole.ToList();
+            foreach (var item in inputList)
+            {
+                var poco = new SecurityRolePoco();
+                poco.Id = Guid.Parse(item.Id);
+                poco.Role = item.Role;
+                poco.IsInactive = item.IsInactive;
+                pocos.Add(poco);
+            }
+            return pocos;
         }
     }
 }

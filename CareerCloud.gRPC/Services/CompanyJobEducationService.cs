@@ -36,44 +36,55 @@ namespace CareerCloud.gRPC.Services
                     Importance = poco.Importance
                 });
         }
-        public override Task<Empty> CreateCompanyJobEducation(ComJobEduProto request, ServerCallContext context)
+        public override Task<ComJobEduArray> GetAllCompanyJobEducation(Empty request, ServerCallContext context)
         {
-            CompanyJobEducationPoco[] pocos = new CompanyJobEducationPoco[1];
-            foreach(var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Job = Guid.Parse(request.Job);
-                poco.Major = request.Major;
-                poco.Importance = Convert.ToInt16(request.Importance);
-            }
-            _logic.Add(pocos);
-            return new Task<Empty>(() => new Empty());
-        }
-        public override Task<Empty> UpdateCompanyJobEducation(ComJobEduProto request, ServerCallContext context)
-        {
-            CompanyJobEducationPoco[] pocos = new CompanyJobEducationPoco[1];
+            List<CompanyJobEducationPoco> pocos = _logic.GetAll(); 
+            List<ComJobEduProto> comJobEduList = new List<ComJobEduProto>();
             foreach (var poco in pocos)
             {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Job = Guid.Parse(request.Job);
-                poco.Major = request.Major;
-                poco.Importance = Convert.ToInt16(request.Importance);
+                ComJobEduProto comJobEdu = new ComJobEduProto();
+                comJobEdu.Id = poco.Id.ToString();
+                comJobEdu.Job = poco.Job.ToString();
+                comJobEdu.Major = poco.Major;
+                comJobEdu.Importance = poco.Importance;
+                comJobEduList.Add(comJobEdu);
             }
-            _logic.Update(pocos);
+            ComJobEduArray comJobEduArray = new ComJobEduArray();
+            comJobEduArray.ComJobEdu.AddRange(comJobEduList);
+            return new Task<ComJobEduArray>(() => comJobEduArray);
+        }
+        public override Task<Empty> CreateCompanyJobEducation(ComJobEduArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Add(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
         }
-        public override Task<Empty> DeleteCompanyJobEducation(ComJobEduProto request, ServerCallContext context)
+        public override Task<Empty> UpdateCompanyJobEducation(ComJobEduArray request, ServerCallContext context)
         {
-            CompanyJobEducationPoco[] pocos = new CompanyJobEducationPoco[1];
-            foreach (var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Job = Guid.Parse(request.Job);
-                poco.Major = request.Major;
-                poco.Importance = Convert.ToInt16(request.Importance);
-            }
-            _logic.Delete(pocos);
+            var pocos = ProtoToPoco(request);
+            _logic.Update(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
+        }
+        public override Task<Empty> DeleteCompanyJobEducation(ComJobEduArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Delete(pocos.ToArray());
+            return new Task<Empty>(() => new Empty());
+        }
+        public List<CompanyJobEducationPoco> ProtoToPoco(ComJobEduArray request)
+        {
+            List<CompanyJobEducationPoco> pocos = new List<CompanyJobEducationPoco>();
+            var inputList = request.ComJobEdu.ToList();
+            foreach (var item in inputList)
+            {
+                var poco = new CompanyJobEducationPoco();
+                poco.Id = Guid.Parse(item.Id);
+                poco.Job = Guid.Parse(item.Job);
+                poco.Major = item.Major;
+                poco.Importance = Convert.ToInt16(item.Importance);
+                pocos.Add(poco);
+            }
+            return pocos;
         }
     }
 }

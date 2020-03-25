@@ -6,9 +6,10 @@ package CareerCloud.gRPC;
 
 service ApplicantWorkHistory{
 	rpc GetApplicantWorkHistory(AppWorkHistIdRequest) returns (AppWorkProto);
-	rpc CreateApplicantWorkHistory(AppWorkProto) returns (google.protobuf.Empty);
-	rpc UpdateApplicantWorkHistory(AppWorkProto) returns (google.protobuf.Empty);
-	rpc DeleteApplicantWorkHistory(AppWorkProto) returns (google.protobuf.Empty);
+    rpc GetAllApplicantWorkHistory(google.protobuf.Empty) returns (AppWorkHistoryArray);
+	rpc CreateApplicantWorkHistory(AppWorkHistoryArray) returns (google.protobuf.Empty);
+	rpc UpdateApplicantWorkHistory(AppWorkHistoryArray) returns (google.protobuf.Empty);
+	rpc DeleteApplicantWorkHistory(AppWorkHistoryArray) returns (google.protobuf.Empty);
 }
 
 message AppWorkHistIdRequest{
@@ -27,4 +28,7 @@ message AppWorkProto{
         int32 StartYear = 9;
         int32 EndMonth = 10;
         int32 EndYear = 11;
+}
+message AppWorkHistoryArray{
+    repeated AppWorkProto AppWork = 1;
 }

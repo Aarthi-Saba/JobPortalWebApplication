@@ -6,9 +6,10 @@ package CareerCloud.gRPC;
 
 service SecurityLoginsRole{
 	rpc GetSecurityLoginsRole(SecLoginsRoleIdRequest) returns (SecLoginsRoleProto);
-	rpc UpdateSecurityLoginsRole(SecLoginsRoleProto) returns (google.protobuf.Empty);
-	rpc CreateSecurityLoginsRole(SecLoginsRoleProto) returns (google.protobuf.Empty);
-	rpc DeleteSecurityLoginsRole(SecLoginsRoleProto) returns (google.protobuf.Empty);
+    rpc GetAllSecurityLoginsRole(google.protobuf.Empty) returns(SecLoginsRoleArray);
+	rpc UpdateSecurityLoginsRole(SecLoginsRoleArray) returns (google.protobuf.Empty);
+	rpc CreateSecurityLoginsRole(SecLoginsRoleArray) returns (google.protobuf.Empty);
+	rpc DeleteSecurityLoginsRole(SecLoginsRoleArray) returns (google.protobuf.Empty);
 }
 
 message SecLoginsRoleIdRequest{
@@ -18,4 +19,7 @@ message SecLoginsRoleProto{
         string Id = 1;
         string Login = 2;
         string Role = 3;
+}
+message SecLoginsRoleArray{
+    repeated SecLoginsRoleProto SecLoginsRole = 1;
 }

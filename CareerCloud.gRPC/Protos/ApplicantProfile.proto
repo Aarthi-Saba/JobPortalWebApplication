@@ -6,17 +6,18 @@ option csharp_namespace = "CareerCloud.gRPC.Protos";
 package CareerCloud.gRPC;
 
 service ApplicantProfile{
-	rpc GetApplicantProfile(AppProfIdRequest) returns (AppProfProto);
-	rpc CreateApplicantProfile(AppProfProto) returns(google.protobuf.Empty);
-	rpc UpdateApplicantProfile(AppProfProto) returns (google.protobuf.Empty);
-	rpc DeleteApplicantProfile(AppProfProto) returns (google.protobuf.Empty);
+	rpc GetApplicantProfile(AppProfIdRequest) returns (AppProfileProto);
+    rpc GetAllApplicantProfile(google.protobuf.Empty) returns(AppProfileArray);
+	rpc CreateApplicantProfile(AppProfileArray) returns(google.protobuf.Empty);
+	rpc UpdateApplicantProfile(AppProfileArray) returns (google.protobuf.Empty);
+	rpc DeleteApplicantProfile(AppProfileArray) returns (google.protobuf.Empty);
 }
 
 message AppProfIdRequest{
 	string Id = 1;
 }
 
-message AppProfProto{
+message AppProfileProto{
 	string Id = 1;
     string Login = 2;
     Decimal CurrentSalary = 3;
@@ -28,7 +29,9 @@ message AppProfProto{
     string City = 9;
     string PostalCode = 10;
 }
-
+message AppProfileArray{
+    repeated AppProfileProto AppProfile = 1;
+}
 message Decimal{
     int64 units = 1;
     sfixed32 nanos = 2;

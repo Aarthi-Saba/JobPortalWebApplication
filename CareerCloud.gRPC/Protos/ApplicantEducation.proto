@@ -7,9 +7,10 @@ package CareerCloud.gRPC;
 
 service ApplicantEducation{
 	rpc GetApplicantEducation(AppEduIdRequest) returns (AppEduProto);
-	rpc CreateApplicantEducation(AppEduProto) returns (google.protobuf.Empty);
-	rpc UpdateApplicantEducation(AppEduProto) returns (google.protobuf.Empty);
-	rpc DeleteApplicantEducation(AppEduProto) returns (google.protobuf.Empty);
+    rpc GetAllApplicantEducation(google.protobuf.Empty) returns (AppEduArray);
+	rpc CreateApplicantEducation(AppEduArray) returns (google.protobuf.Empty);
+	rpc UpdateApplicantEducation(AppEduArray) returns (google.protobuf.Empty);
+	rpc DeleteApplicantEducation(AppEduArray) returns (google.protobuf.Empty);
 }
 
 message AppEduIdRequest{
@@ -25,6 +26,6 @@ message AppEduProto{
      google.protobuf.Timestamp CompletionDate = 6;
      int32 CompletionPercent = 7;
 }
-//message ApplicantEducationinputs{
-//	repeated AppEduProto AppEduArray = 1;
-//}
+message AppEduArray{
+	repeated AppEduProto AppEdu = 1;
+}

@@ -20,22 +20,20 @@ namespace CareerCloud.gRPC.Services
         {
             _logic = new ApplicantProfileLogic(new EFGenericRepository<ApplicantProfilePoco>());
         }
-        public override Task<AppProfProto> GetApplicantProfile(AppProfIdRequest request, ServerCallContext context)
+        public override Task<AppProfileProto> GetApplicantProfile(AppProfIdRequest request, ServerCallContext context)
         {
             ApplicantProfilePoco poco = _logic.Get(Guid.Parse(request.Id));
-            if(poco is null)
+            if (poco is null)
             {
                 throw new ArgumentOutOfRangeException("Id entered in input not found in system");
             }
-            Protos.Decimal grpcsalary = poco.CurrentSalary;
-            Protos.Decimal grpcrate = poco.CurrentRate;
-            return new Task<AppProfProto>(
-                () => new AppProfProto
+            return new Task<AppProfileProto>(
+                () => new AppProfileProto
                 {
                     Id = poco.Id.ToString(),
                     Login = poco.Login.ToString(),
-                    CurrentSalary = grpcsalary,
-                    CurrentRate = grpcrate,
+                    CurrentSalary = (Protos.Decimal)poco.CurrentSalary,
+                    CurrentRate = (Protos.Decimal)poco.CurrentRate,
                     Currency = poco.Currency,
                     Country = poco.Country,
                     Province = poco.Province,
@@ -44,63 +42,65 @@ namespace CareerCloud.gRPC.Services
                     PostalCode = poco.PostalCode
                 });
         }
-        public override Task<Empty> CreateApplicantProfile(AppProfProto request, ServerCallContext context)
+        public override Task<AppProfileArray> GetAllApplicantProfile(Empty request, ServerCallContext context)
         {
-            ApplicantProfilePoco[] pocos = new ApplicantProfilePoco[1];
-            foreach (var poco in pocos)
+            List<AppProfileProto> appProfileList = new List<AppProfileProto>();
+            List<ApplicantProfilePoco> pocos = _logic.GetAll();
+            foreach(var poco in pocos)
             {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Login = Guid.Parse(request.Login);
-                poco.CurrentSalary = request.CurrentSalary;
-                poco.CurrentRate =request.CurrentRate;
-                poco.Currency = request.Currency;
-                poco.Country = request.Country;
-                poco.Province = request.Province;
-                poco.Street = request.Street;
-                poco.City = request.City;
-                poco.PostalCode = request.PostalCode;
+                AppProfileProto appProfile = new AppProfileProto();
+                appProfile.Id = poco.Id.ToString();
+                appProfile.Login = poco.Login.ToString();
+                appProfile.CurrentSalary = (Protos.Decimal)poco.CurrentSalary;
+                appProfile.CurrentRate = (Protos.Decimal)poco.CurrentRate;
+                appProfile.Currency = poco.Currency;
+                appProfile.Country = poco.Country;
+                appProfile.Province = poco.Province;
+                appProfile.Street = poco.Street;
+                appProfile.City = poco.City;
+                appProfile.PostalCode = poco.PostalCode;
             }
-            _logic.Add(pocos);
+            AppProfileArray appProfileArray = new AppProfileArray();
+            appProfileArray.AppProfile.AddRange(appProfileList);
+            return new Task<AppProfileArray>(() => appProfileArray);
+        }
+        public override Task<Empty> CreateApplicantProfile(AppProfileArray request, ServerCallContext context)
+        {
+            var pocos = ProtosToPoco(request);
+            _logic.Add(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
         }
-
-        public override Task<Empty> UpdateApplicantProfile(AppProfProto request, ServerCallContext context)
+        public override Task<Empty> UpdateApplicantProfile(AppProfileArray request, ServerCallContext context)
         {
-            ApplicantProfilePoco[] pocos = new ApplicantProfilePoco[1];
-            foreach (var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Login = Guid.Parse(request.Login);
-                poco.CurrentSalary = request.CurrentSalary;
-                poco.CurrentRate = request.CurrentRate;
-                poco.Currency = request.Currency;
-                poco.Country = request.Country;
-                poco.Province = request.Province;
-                poco.Street = request.Street;
-                poco.City = request.City;
-                poco.PostalCode = request.PostalCode;
-            }
-            _logic.Update(pocos);
+            var pocos = ProtosToPoco(request);
+            _logic.Update(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
         }
-        public override Task<Empty> DeleteApplicantProfile(AppProfProto request, ServerCallContext context)
+        public override Task<Empty> DeleteApplicantProfile(AppProfileArray request, ServerCallContext context)
         {
-            ApplicantProfilePoco[] pocos = new ApplicantProfilePoco[1];
-            foreach (var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Login = Guid.Parse(request.Login);
-                poco.CurrentSalary = request.CurrentSalary;
-                poco.CurrentRate = request.CurrentRate;
-                poco.Currency = request.Currency;
-                poco.Country = request.Country;
-                poco.Province = request.Province;
-                poco.Street = request.Street;
-                poco.City = request.City;
-                poco.PostalCode = request.PostalCode;
-            }
-            _logic.Delete(pocos);
+            var pocos = ProtosToPoco(request);
+            _logic.Delete(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
+        }
+        public List<ApplicantProfilePoco> ProtosToPoco(AppProfileArray request)
+        {
+            List<ApplicantProfilePoco> pocos = new List<ApplicantProfilePoco>();
+            var inputList = request.AppProfile.ToList();
+            foreach (var item in inputList)
+            {
+                var poco = new ApplicantProfilePoco();
+                poco.Id = Guid.Parse(item.Id);
+                poco.Login = Guid.Parse(item.Login);
+                poco.CurrentSalary = item.CurrentSalary;
+                poco.CurrentRate = item.CurrentRate;
+                poco.Currency = item.Currency;
+                poco.Country = item.Country;
+                poco.Province = item.Province;
+                poco.Street = item.Street;
+                poco.City = item.City;
+                poco.PostalCode = item.PostalCode;
+            }
+            return pocos;
         }
     }
 }

@@ -6,6 +6,7 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using static CareerCloud.gRPC.Protos.ApplicantEducation;
 
@@ -34,56 +35,65 @@ namespace CareerCloud.gRPC.Services
                     Major = poco.Major,
                     CertificateDiploma = poco.CertificateDiploma,
                     StartDate = poco.StartDate is null ? null : Timestamp.FromDateTime((DateTime)poco.StartDate),
-                    CompletionDate = poco.CompletionDate is null ? null : Timestamp.FromDateTime((DateTime) poco.CompletionDate),
+                    CompletionDate = poco.CompletionDate is null ? null : Timestamp.FromDateTime((DateTime)poco.CompletionDate),
                     CompletionPercent = poco.CompletionPercent is null ? 0 : (int)poco.CompletionPercent
-                }) ;
+                });
         }
-        public override Task<Empty> CreateApplicantEducation(AppEduProto request, ServerCallContext context)
+        public override Task<AppEduArray> GetAllApplicantEducation(Empty request, ServerCallContext context)
         {
-            ApplicantEducationPoco[] pocos = new ApplicantEducationPoco[1];
+            List<AppEduProto> appEduList = new List<AppEduProto>();
+            List<ApplicantEducationPoco> pocos = _logic.GetAll();
             foreach(var poco in pocos)
             {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Applicant = Guid.Parse(request.Applicant);
-                poco.Major = request.Major;
-                poco.StartDate = request.StartDate.ToDateTime();
-                poco.CompletionDate = request.CompletionDate.ToDateTime();
-                poco.CompletionPercent = Convert.ToByte(request.CompletionPercent);
-
-            }            
-            _logic.Add(pocos);
+                AppEduProto appEdu  = new AppEduProto();
+                appEdu.Id = poco.Id.ToString();
+                appEdu.Applicant = poco.Applicant.ToString();
+                appEdu.Major = poco.Major;
+                appEdu.CertificateDiploma = poco.CertificateDiploma;
+                appEdu.StartDate = poco.StartDate is null ? null : Timestamp.FromDateTime((DateTime)poco.StartDate);
+                appEdu.CompletionDate = poco.CompletionDate is null ? null : Timestamp.FromDateTime((DateTime)poco.CompletionDate);
+                appEdu.CompletionPercent = poco.CompletionPercent is null ? 0 : (int)poco.CompletionPercent;
+                appEduList.Add(appEdu);
+            }
+            AppEduArray appEduArray = new AppEduArray();
+            appEduArray.AppEdu.AddRange(appEduList);
+            return new Task<AppEduArray>(() => appEduArray);
+        }
+        public override Task<Empty> CreateApplicantEducation(AppEduArray request, ServerCallContext context)
+        {
+            var pocos = ProtoToPoco(request);
+            _logic.Add(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
         }
-        public override Task<Empty> UpdateApplicantEducation(AppEduProto request, ServerCallContext context)
+        public override Task<Empty> UpdateApplicantEducation(AppEduArray request, ServerCallContext context)
         {
-            ApplicantEducationPoco[] pocos = new ApplicantEducationPoco[1];
-            foreach (var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Applicant = Guid.Parse(request.Applicant);
-                poco.Major = request.Major;
-                poco.StartDate = request.StartDate.ToDateTime();
-                poco.CompletionDate = request.CompletionDate.ToDateTime();
-                poco.CompletionPercent = Convert.ToByte(request.CompletionPercent);
-            }
-            _logic.Update(pocos);
+            var pocos = ProtoToPoco(request);
+            _logic.Update(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
         }
-        public override Task<Empty> DeleteApplicantEducation(AppEduProto request, ServerCallContext context)
+        public override Task<Empty> DeleteApplicantEducation(AppEduArray request, ServerCallContext context)
         {
-            ApplicantEducationPoco[] pocos = new ApplicantEducationPoco[1];
-            foreach (var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Applicant = Guid.Parse(request.Applicant);
-                poco.Major = request.Major;
-                poco.StartDate = request.StartDate.ToDateTime();
-                poco.CompletionDate = request.CompletionDate.ToDateTime();
-                poco.CompletionPercent = Convert.ToByte(request.CompletionPercent);
-
-            }
-            _logic.Delete(pocos);
+            var pocos = ProtoToPoco(request);
+            _logic.Delete(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
+        }
+        public List<ApplicantEducationPoco> ProtoToPoco(AppEduArray request)
+        {
+            List<ApplicantEducationPoco> pocos = new List<ApplicantEducationPoco>();
+
+            var inputList = request.AppEdu.ToList();
+            foreach (var item in inputList)
+            {
+                var poco = new ApplicantEducationPoco();
+                poco.Id = Guid.Parse(item.Id);
+                poco.Applicant = Guid.Parse(item.Applicant);
+                poco.Major = item.Major;
+                poco.StartDate = item.StartDate.ToDateTime();
+                poco.CompletionDate = item.CompletionDate.ToDateTime();
+                poco.CompletionPercent = Convert.ToByte(item.CompletionPercent);
+                pocos.Add(poco);
+            }
+            return pocos;
         }
     }
-}
+    }

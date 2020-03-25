@@ -23,7 +23,7 @@ namespace CareerCloud.gRPC.Services
         public override Task<AppJobProto> GetApplicantJobApplication(AppJobIdRequest request, ServerCallContext context)
         {
             ApplicantJobApplicationPoco poco = _logic.Get(Guid.Parse(request.Id));
-            if(poco is null)
+            if (poco is null)
             {
                 throw new ArgumentOutOfRangeException("Id entered in input not found in system");
             }
@@ -36,44 +36,56 @@ namespace CareerCloud.gRPC.Services
                     ApplicationDate = Timestamp.FromDateTime((DateTime)poco.ApplicationDate)
                 });
         }
-        public override Task<Empty> CreateApplicantJobApplication(AppJobProto request, ServerCallContext context)
+        public override Task<AppJobArray> GetAllApplicantJobApplication(Empty request, ServerCallContext context)
         {
-            ApplicantJobApplicationPoco[] pocos = new ApplicantJobApplicationPoco[1];
-            foreach(var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Applicant = Guid.Parse(request.Applicant);
-                poco.Job = Guid.Parse(request.Job);
-                poco.ApplicationDate = request.ApplicationDate.ToDateTime();
-            }
-            _logic.Add(pocos);
-            return new Task<Empty>(() => new Empty());
-        }
-        public override Task<Empty> UpdateApplicantJobApplication(AppJobProto request, ServerCallContext context)
-        {
-            ApplicantJobApplicationPoco[] pocos = new ApplicantJobApplicationPoco[1];
+            List<AppJobProto> appjoblist = new List<AppJobProto>();
+            List<ApplicantJobApplicationPoco> pocos = _logic.GetAll();
             foreach (var poco in pocos)
             {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Applicant = Guid.Parse(request.Applicant);
-                poco.Job = Guid.Parse(request.Job);
-                poco.ApplicationDate = request.ApplicationDate.ToDateTime();
+                AppJobProto appjob = new AppJobProto();
+                appjob.Id = poco.Id.ToString();
+                appjob.Applicant = poco.Applicant.ToString();
+                appjob.Job = poco.Job.ToString();
+                appjob.ApplicationDate = Timestamp.FromDateTime((DateTime)poco.ApplicationDate);
+                appjoblist.Add(appjob);
             }
-            _logic.Update(pocos);
+            AppJobArray appjobarray = new AppJobArray();
+            appjobarray.AppJob.AddRange(appjoblist);
+            return new Task<AppJobArray>(() => appjobarray); 
+        }
+        public override Task<Empty> CreateApplicantJobApplication(AppJobArray request, ServerCallContext context)
+        {
+            var pocos = PrototoPoco(request);
+            _logic.Add(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
         }
-        public override Task<Empty> DeleteApplicantJobApplication(AppJobProto request, ServerCallContext context)
+        public override Task<Empty> UpdateApplicantJobApplication(AppJobArray request, ServerCallContext context)
         {
-            ApplicantJobApplicationPoco[] pocos = new ApplicantJobApplicationPoco[1];
-            foreach (var poco in pocos)
-            {
-                poco.Id = Guid.Parse(request.Id);
-                poco.Applicant = Guid.Parse(request.Applicant);
-                poco.Job = Guid.Parse(request.Job);
-                poco.ApplicationDate = request.ApplicationDate.ToDateTime();
-            }
-            _logic.Delete(pocos);
+            var pocos = PrototoPoco(request);
+            _logic.Update(pocos.ToArray());
             return new Task<Empty>(() => new Empty());
+        }
+        public override Task<Empty> DeleteApplicantJobApplication(AppJobArray request, ServerCallContext context)
+        {
+            var pocos = PrototoPoco(request);
+            _logic.Delete(pocos.ToArray());
+            return new Task<Empty>(() => new Empty());
+        }
+        public List<ApplicantJobApplicationPoco> PrototoPoco(AppJobArray request)
+        {
+            List<ApplicantJobApplicationPoco> pocos = new List<ApplicantJobApplicationPoco>();
+
+            var inputlist = request.AppJob.ToList();
+            foreach (var item in inputlist)
+            {
+                var poco = new ApplicantJobApplicationPoco();
+                poco.Id = Guid.Parse(item.Id);
+                poco.Applicant = Guid.Parse(item.Applicant);
+                poco.Job = Guid.Parse(item.Job);
+                poco.ApplicationDate = item.ApplicationDate.ToDateTime();
+                pocos.Add(poco);
+            }
+            return pocos;
         }
     }
 }
